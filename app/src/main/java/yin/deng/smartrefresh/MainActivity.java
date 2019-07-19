@@ -63,14 +63,18 @@ public class MainActivity extends AppCompatActivity {
         }
         smRf = (SmartRefreshLayout) findViewById(R.id.smRf);
         rcView = (RecyclerView) findViewById(R.id.rcView);
-        MyRefreshRequestListener<String> refreshListener = new MyRefreshRequestListener<String>(datas, 300, new MyRefreshRequestListener.OnRequestListener() {
+        smRf.setEnableAutoLoadmore(true);
+        MyRefreshRequestListener<String> refreshListener = new MyRefreshRequestListener<String>(datas, 0, new MyRefreshRequestListener.OnRequestListener() {
             @Override
             public void onRequest(boolean isRefresh) {
                 List<String> getDatas=new ArrayList<>();
                 if(isRefresh){
-                    getDatas.add("刷新");
+                    for(int i=0;i<20;i++) {
+                        getDatas.add("数据1");
+                        getDatas.add("数据2");
+                    }
                 }else{
-                    if(datas.size()<=60) {
+                    if(datas.size()<=40) {
                         getDatas.add("加载更多");
                         getDatas.add("加载更多");
                         getDatas.add("加载更多");

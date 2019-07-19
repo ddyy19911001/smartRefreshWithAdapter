@@ -124,8 +124,8 @@ public class DemoAc extends Application {
      *                     break;
      *                 case Refreshing:
      *                     Log.i(L, "正在刷新");
-     *                     if (footerText != null && footerText.getVisibility() == VISIBLE) {
-     *                         footerText.setVisibility(GONE);
+     *                     if (footerNoMoreLayout != null && footerNoMoreLayout.getVisibility() == VISIBLE) {
+     *                         footerNoMoreLayout.setVisibility(GONE);
      *                     }
      *                     break;
      *                 case ReleaseToRefresh:
