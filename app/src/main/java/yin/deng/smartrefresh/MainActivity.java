@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         smRf = (SmartRefreshLayout) findViewById(R.id.smRf);
         rcView = (RecyclerView) findViewById(R.id.rcView);
         smRf.setEnableAutoLoadmore(true);
-        MyRefreshRequestListener<String> refreshListener = new MyRefreshRequestListener<String>(datas, 0, new MyRefreshRequestListener.OnRequestListener() {
+        MyRefreshRequestListener<String> refreshListener = new MyRefreshRequestListener<String>(datas, 250, new MyRefreshRequestListener.OnRequestListener() {
             @Override
             public void onRequest(boolean isRefresh) {
                 List<String> getDatas=new ArrayList<>();

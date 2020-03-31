@@ -46,8 +46,8 @@ public class MyFooterView extends LinearLayout implements RefreshFooter {
         footerNoMoreLayout.setVisibility(GONE);
         Log.d("footer","隐藏footer");
         gifView.pause();//暂停动画
-        gifView.setGifResource(R.drawable.bottom_load);
-        headText.setVisibility(GONE);
+        gifView.setGifResource(R.drawable.load);
+        headText.setVisibility(VISIBLE);
         addView(view);
     }
 
@@ -131,7 +131,7 @@ public class MyFooterView extends LinearLayout implements RefreshFooter {
         } else {
             Log.d(L,"刷新完成");
         }
-        return 500;//延迟500毫秒之后再弹回
+        return 50;//延迟500毫秒之后再弹回
     }
 
     @Override
