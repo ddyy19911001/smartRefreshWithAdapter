@@ -41,7 +41,6 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import yin.deng.refreshlibrary.R;
 import yin.deng.refreshlibrary.refresh.api.DefaultRefreshFooterCreater;
 import yin.deng.refreshlibrary.refresh.api.DefaultRefreshHeaderCreater;
@@ -91,7 +90,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
     protected int mSpinner;//当前的 Spinner
     protected int mLastSpinner;//最后的，的Spinner
     protected int mTouchSpinner;//触摸时候，的Spinner
-    protected int mReboundDuration = 250;
+    protected int mReboundDuration = 200;
     protected int mScreenHeightPixels;
     protected float mTouchX;
     protected float mTouchY;
@@ -481,7 +480,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
             mRefreshListener = new OnRefreshListener() {
                 @Override
                 public void onRefresh(RefreshLayout refreshlayout) {
-                    refreshlayout.finishRefresh(3000);
+                    refreshlayout.finishRefresh(2000);
                 }
             };
         }
@@ -2085,8 +2084,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishRefresh() {
-        long passTime = System.currentTimeMillis() - mLastRefreshingTime;
-        return finishRefresh(Math.max(0, 1000 - (int) passTime));//保证刷新动画有1000毫秒的时间
+        return finishRefresh(0);//保证刷新动画有1000毫秒的时间
     }
 
     /**
@@ -2094,8 +2092,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishLoadmore() {
-        long passTime = System.currentTimeMillis() - mLastLoadingTime;
-        return finishLoadmore(Math.max(0, 1000 - (int) passTime));//保证加载动画有1000毫秒的时间
+        return finishLoadmore(0,true);//保证加载动画有1000毫秒的时间
     }
 
     /**
@@ -2111,8 +2108,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishRefresh(boolean success) {
-        long passTime = System.currentTimeMillis() - mLastRefreshingTime;
-        return finishRefresh(Math.max(0, 1000 - (int) passTime), success);
+        return finishRefresh(0, success);
     }
 
     /**
@@ -2120,29 +2116,50 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishRefresh(int delayed, final boolean success) {
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mState == RefreshState.Refreshing) {
-                    if (mRefreshHeader != null) {
-                        int startDelay = mRefreshHeader.onFinish(SmartRefreshLayout.this, success);
-                        notifyStateChanged(RefreshState.RefreshFinish);
-                        if (mOnMultiPurposeListener != null) {
-                            mOnMultiPurposeListener.onHeaderFinish(mRefreshHeader, success);
-                        }
-                        if (startDelay < Integer.MAX_VALUE) {
-                            if (mSpinner == 0) {
-                                resetStatus();
-                            } else {
-                                animSpinner(0, startDelay);
-                            }
-                        }
-                    } else {
-                        resetStatus();
+        if(delayed==0){
+            if (mState == RefreshState.Refreshing) {
+                if (mRefreshHeader != null) {
+                    int startDelay = mRefreshHeader.onFinish(SmartRefreshLayout.this, success);
+                    notifyStateChanged(RefreshState.RefreshFinish);
+                    if (mOnMultiPurposeListener != null) {
+                        mOnMultiPurposeListener.onHeaderFinish(mRefreshHeader, success);
                     }
+                    if (startDelay < Integer.MAX_VALUE) {
+                        if (mSpinner == 0) {
+                            resetStatus();
+                        } else {
+                            animSpinner(0, startDelay);
+                        }
+                    }
+                } else {
+                    resetStatus();
                 }
             }
-        }, delayed);
+        }else {
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mState == RefreshState.Refreshing) {
+                        if (mRefreshHeader != null) {
+                            int startDelay = mRefreshHeader.onFinish(SmartRefreshLayout.this, success);
+                            notifyStateChanged(RefreshState.RefreshFinish);
+                            if (mOnMultiPurposeListener != null) {
+                                mOnMultiPurposeListener.onHeaderFinish(mRefreshHeader, success);
+                            }
+                            if (startDelay < Integer.MAX_VALUE) {
+                                if (mSpinner == 0) {
+                                    resetStatus();
+                                } else {
+                                    animSpinner(0, startDelay);
+                                }
+                            }
+                        } else {
+                            resetStatus();
+                        }
+                    }
+                }
+            }, delayed);
+        }
         return this;
     }
 
@@ -2159,8 +2176,7 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishLoadmore(boolean success) {
-        long passTime = System.currentTimeMillis() - mLastLoadingTime;
-        return finishLoadmore(Math.max(0, 1000 - (int) passTime), success);
+        return finishLoadmore(0, success);
     }
 
     /**
@@ -2168,34 +2184,60 @@ public class SmartRefreshLayout extends ViewGroup implements RefreshLayout, Nest
      */
     @Override
     public SmartRefreshLayout finishLoadmore(int delayed, final boolean success) {
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mState == RefreshState.Loading) {
-                    if (mRefreshFooter != null && mKernel != null && mRefreshContent != null) {
-                        int startDelay = mRefreshFooter.onFinish(SmartRefreshLayout.this, success);
-                        if (startDelay == Integer.MAX_VALUE) {
-                            return;
-                        }
-                        notifyStateChanged(RefreshState.LoadFinish);
-                        AnimatorUpdateListener updateListener = mRefreshContent.onLoadingFinish(mKernel, mFooterHeight, startDelay, mReboundDuration);
-                        if (mOnMultiPurposeListener != null) {
-                            mOnMultiPurposeListener.onFooterFinish(mRefreshFooter, success);
-                        }
-                        if (mSpinner == 0) {
-                            resetStatus();
-                        } else {
-                            ValueAnimator valueAnimator = animSpinner(0, startDelay);
-                            if (updateListener != null && valueAnimator != null) {
-                                valueAnimator.addUpdateListener(updateListener);
-                            }
-                        }
-                    } else {
-                        resetStatus();
+        if(delayed==0){
+            if (mState == RefreshState.Loading) {
+                if (mRefreshFooter != null && mKernel != null && mRefreshContent != null) {
+                    int startDelay = mRefreshFooter.onFinish(SmartRefreshLayout.this, success);
+                    if (startDelay == Integer.MAX_VALUE) {
+                        return this;
                     }
+                    notifyStateChanged(RefreshState.LoadFinish);
+                    AnimatorUpdateListener updateListener = mRefreshContent.onLoadingFinish(mKernel, mFooterHeight, startDelay, mReboundDuration);
+                    if (mOnMultiPurposeListener != null) {
+                        mOnMultiPurposeListener.onFooterFinish(mRefreshFooter, success);
+                    }
+                    if (mSpinner == 0) {
+                        resetStatus();
+                    } else {
+                        ValueAnimator valueAnimator = animSpinner(0, startDelay);
+                        if (updateListener != null && valueAnimator != null) {
+                            valueAnimator.addUpdateListener(updateListener);
+                        }
+                    }
+                } else {
+                    resetStatus();
                 }
             }
-        }, delayed);
+        }else {
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mState == RefreshState.Loading) {
+                        if (mRefreshFooter != null && mKernel != null && mRefreshContent != null) {
+                            int startDelay = mRefreshFooter.onFinish(SmartRefreshLayout.this, success);
+                            if (startDelay == Integer.MAX_VALUE) {
+                                return;
+                            }
+                            notifyStateChanged(RefreshState.LoadFinish);
+                            AnimatorUpdateListener updateListener = mRefreshContent.onLoadingFinish(mKernel, mFooterHeight, startDelay, mReboundDuration);
+                            if (mOnMultiPurposeListener != null) {
+                                mOnMultiPurposeListener.onFooterFinish(mRefreshFooter, success);
+                            }
+                            if (mSpinner == 0) {
+                                resetStatus();
+                            } else {
+                                ValueAnimator valueAnimator = animSpinner(0, startDelay);
+                                if (updateListener != null && valueAnimator != null) {
+                                    valueAnimator.addUpdateListener(updateListener);
+                                }
+                            }
+                        } else {
+                            resetStatus();
+                        }
+                    }
+                }
+            }, delayed);
+        }
         return this;
     }
 
